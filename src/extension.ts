@@ -1,26 +1,40 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+import { IsolatedDecoratorCodeLensProvider } from "./codelens";
+import { findIsolatedDecorators } from "./isolate";
+import { getPythonExtension } from "./python";
+import { isPythonDocument } from "./utils";
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "serverless" is now active!');
+export async function activate(context: vscode.ExtensionContext) {
+  const pythonExtension = await getPythonExtension();
+  console.log("-------------------------------------");
+  console.log(pythonExtension);
+  console.log("-------------------------------------");
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('serverless.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from fal-serverless-vscode!');
-	});
+  const onDidOpenTextDocumentListener = vscode.workspace.onDidOpenTextDocument(
+    (document) => {
+      if (isPythonDocument(document)) {
+        const decorators = findIsolatedDecorators(document);
+        console.log("decorators found:");
+        console.log(decorators);
+        if (decorators.length > 0) {
+          // Your extension logic goes here, for example:
+          vscode.window.showInformationMessage(
+            "Activated for file with @isolated decorator"
+          );
+        }
+      }
+    }
+  );
+  context.subscriptions.push(onDidOpenTextDocumentListener);
 
-	context.subscriptions.push(disposable);
+  // Code Lens
+  const codeLensProvider = new IsolatedDecoratorCodeLensProvider();
+  const codeLensProviderDisposable = vscode.languages.registerCodeLensProvider(
+    { language: "python" },
+    codeLensProvider
+  );
+  context.subscriptions.push(codeLensProviderDisposable);
 }
 
-// This method is called when your extension is deactivated
 export function deactivate() {}
