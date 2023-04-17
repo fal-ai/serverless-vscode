@@ -9,30 +9,6 @@ import {
 import { findIsolatedDecorators } from "./isolate";
 import { isPythonDocument } from "./utils";
 
-function selectEnvironment(context: vscode.ExtensionContext, filename: string) {
-  const progressOptions = {
-    location: vscode.ProgressLocation.Window,
-    title: "Isolated env build",
-    cancellable: false,
-  };
-  vscode.window.withProgress(progressOptions, (progress) => {
-    progress.report({ message: "started..." });
-    return activateIsolatedEnvironment(
-      context.globalStorageUri.fsPath,
-      filename
-    )
-      .catch((exception) => {
-        console.error(exception);
-        vscode.window.showErrorMessage(
-          "Error initializing isolated environment"
-        );
-      })
-      .finally(() => {
-        progress.report({ message: "done!", increment: 100 });
-      });
-  });
-}
-
 export async function activate(context: vscode.ExtensionContext) {
   await installExtensionModule();
 
@@ -70,17 +46,18 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(onDidSaveTextDocument);
 
-  const onDidChangeActiveTextEditorHandler = vscode.window.onDidChangeActiveTextEditor((editor) => {
-    if (editor) {
-      const document = editor.document;
-      if (isPythonDocument(document)) {
-        const decorators = findIsolatedDecorators(document);
-        if (decorators.length > 0) {
-          selectEnvironment(context, document.fileName);
+  const onDidChangeActiveTextEditorHandler =
+    vscode.window.onDidChangeActiveTextEditor((editor) => {
+      if (editor) {
+        const document = editor.document;
+        if (isPythonDocument(document)) {
+          const decorators = findIsolatedDecorators(document);
+          if (decorators.length > 0) {
+            selectEnvironment(context, document.fileName);
+          }
         }
       }
-    }
-  });
+    });
   context.subscriptions.push(onDidChangeActiveTextEditorHandler);
 
   // Code Lens
@@ -92,4 +69,30 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(codeLensProviderDisposable);
 }
 
-export function deactivate() {}
+export function deactivate() {
+  // currently no-op
+}
+
+function selectEnvironment(context: vscode.ExtensionContext, filename: string) {
+  const progressOptions = {
+    location: vscode.ProgressLocation.Window,
+    title: "Isolated env build",
+    cancellable: false,
+  };
+  vscode.window.withProgress(progressOptions, (progress) => {
+    progress.report({ message: "started..." });
+    return activateIsolatedEnvironment(
+      context.globalStorageUri.fsPath,
+      filename
+    )
+      .catch((exception) => {
+        console.error(exception);
+        vscode.window.showErrorMessage(
+          "Error initializing isolated environment"
+        );
+      })
+      .finally(() => {
+        progress.report({ message: "done!", increment: 100 });
+      });
+  });
+}

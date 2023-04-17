@@ -121,18 +121,20 @@ export async function runFunction(
   const metadata = functions.find(
     (func) => func.isolate_node.line.start_line === isolatedLine
   );
+  const delay = (ms: number) => {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  };
   if (metadata) {
     const terminal = vscode.window.createTerminal(`run ${metadata.name}`);
 
-    const interpreter = await getInterpreterPath();
-    // terminal.
     terminal.show(true);
-    terminal.sendText("source " + path.resolve(interpreter, "..", "activate"));
+    await delay(500);
 
     const runScript = path.resolve(SCRIPTS, "run.py");
     terminal.sendText(`export RUN_SCRIPT=${runScript}`);
-    terminal.sendText("clear");
+
     const cmd = ["python", "$RUN_SCRIPT", filename, metadata.name];
+    terminal.sendText("clear");
     terminal.sendText(cmd.join(" "));
   }
 }
