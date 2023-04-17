@@ -65,7 +65,6 @@ export async function activateIsolatedEnvironment(
     envName,
     `${name}_isolated`
   );
-  console.log("envPath", envPath);
   if (fs.existsSync(envPath)) {
     await setVirtualEnvPath(path.resolve(envPath, "bin", "python"));
     return;
@@ -122,17 +121,19 @@ export async function runFunction(
   const metadata = functions.find(
     (func) => func.isolate_node.line.start_line === isolatedLine
   );
-  console.log(metadata);
   if (metadata) {
     const terminal = vscode.window.createTerminal(`run ${metadata.name}`);
 
     const interpreter = await getInterpreterPath();
+    // terminal.
+    terminal.show(true);
     terminal.sendText("source " + path.resolve(interpreter, "..", "activate"));
 
     const runScript = path.resolve(SCRIPTS, "run.py");
-    const cmd = ["python", runScript, filename, metadata.name];
+    terminal.sendText(`export RUN_SCRIPT=${runScript}`);
+    terminal.sendText("clear");
+    const cmd = ["python", "$RUN_SCRIPT", filename, metadata.name];
     terminal.sendText(cmd.join(" "));
-    terminal.show();
   }
 }
 

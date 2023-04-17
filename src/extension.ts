@@ -70,6 +70,19 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(onDidSaveTextDocument);
 
+  const onDidChangeActiveTextEditorHandler = vscode.window.onDidChangeActiveTextEditor((editor) => {
+    if (editor) {
+      const document = editor.document;
+      if (isPythonDocument(document)) {
+        const decorators = findIsolatedDecorators(document);
+        if (decorators.length > 0) {
+          selectEnvironment(context, document.fileName);
+        }
+      }
+    }
+  });
+  context.subscriptions.push(onDidChangeActiveTextEditorHandler);
+
   // Code Lens
   const codeLensProvider = new IsolatedDecoratorCodeLensProvider();
   const codeLensProviderDisposable = vscode.languages.registerCodeLensProvider(
