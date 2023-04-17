@@ -1,32 +1,74 @@
 import * as vscode from "vscode";
 
 import { IsolatedDecoratorCodeLensProvider } from "./codelens";
+import {
+  activateIsolatedEnvironment,
+  installExtensionModule,
+  runFunction,
+} from "./integration";
 import { findIsolatedDecorators } from "./isolate";
-import { getPythonExtension } from "./python";
 import { isPythonDocument } from "./utils";
 
+function selectEnvironment(context: vscode.ExtensionContext, filename: string) {
+  const progressOptions = {
+    location: vscode.ProgressLocation.Window,
+    title: "Isolated env build",
+    cancellable: false,
+  };
+  vscode.window.withProgress(progressOptions, (progress) => {
+    progress.report({ message: "started..." });
+    return activateIsolatedEnvironment(
+      context.globalStorageUri.fsPath,
+      filename
+    )
+      .catch((exception) => {
+        console.error(exception);
+        vscode.window.showErrorMessage(
+          "Error initializing isolated environment"
+        );
+      })
+      .finally(() => {
+        progress.report({ message: "done!", increment: 100 });
+      });
+  });
+}
+
 export async function activate(context: vscode.ExtensionContext) {
-  const pythonExtension = await getPythonExtension();
-  console.log("-------------------------------------");
-  console.log(pythonExtension);
-  console.log("-------------------------------------");
+  await installExtensionModule();
+
+  vscode.commands.registerCommand("extension.runIsolatedFunction", runFunction);
+
+  const activeEditor = vscode.window.activeTextEditor;
+  if (activeEditor && isPythonDocument(activeEditor.document)) {
+    const decorators = findIsolatedDecorators(activeEditor.document);
+    if (decorators.length > 0) {
+      selectEnvironment(context, activeEditor.document.fileName);
+    }
+  }
 
   const onDidOpenTextDocumentListener = vscode.workspace.onDidOpenTextDocument(
     (document) => {
       if (isPythonDocument(document)) {
         const decorators = findIsolatedDecorators(document);
-        console.log("decorators found:");
-        console.log(decorators);
         if (decorators.length > 0) {
-          // Your extension logic goes here, for example:
-          vscode.window.showInformationMessage(
-            "Activated for file with @isolated decorator"
-          );
+          selectEnvironment(context, document.fileName);
         }
       }
     }
   );
   context.subscriptions.push(onDidOpenTextDocumentListener);
+
+  const onDidSaveTextDocument = vscode.workspace.onDidSaveTextDocument(
+    (document: vscode.TextDocument) => {
+      if (isPythonDocument(document)) {
+        const decorators = findIsolatedDecorators(document);
+        if (decorators.length > 0) {
+          selectEnvironment(context, document.fileName);
+        }
+      }
+    }
+  );
+  context.subscriptions.push(onDidSaveTextDocument);
 
   // Code Lens
   const codeLensProvider = new IsolatedDecoratorCodeLensProvider();

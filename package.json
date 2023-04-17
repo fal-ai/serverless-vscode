@@ -13,6 +13,24 @@
   "activationEvents": [
     "onLanguage:python"
   ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "extension.runIsolatedFunction",
+        "title": "Run Custom Command",
+        "arguments": [
+          {
+            "name": "filename",
+            "description": "The path of the file"
+          },
+          {
+            "name": "isolatedLine",
+            "description": "The line of the isolated decorator"
+          }
+        ]
+      }
+    ]
+  },
   "main": "./out/extension.js",
   "scripts": {
     "vscode:prepublish": "npm run compile",

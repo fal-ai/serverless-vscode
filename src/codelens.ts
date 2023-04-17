@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 
+import { getIsolateMetadata } from "./integration";
 import { findIsolatedDecorators } from "./isolate";
 
 export class IsolatedDecoratorCodeLensProvider
@@ -10,15 +11,20 @@ export class IsolatedDecoratorCodeLensProvider
     token: vscode.CancellationToken
   ): Promise<vscode.CodeLens[]> {
     const codeLenses: vscode.CodeLens[] = [];
+    if (document.languageId !== "python") {
+      return codeLenses;
+    }
     const isolatedPositions = findIsolatedDecorators(document);
-
+    if (isolatedPositions.length === 0) {
+      return codeLenses;
+    }
+    const filename = document.fileName;
     for (const position of isolatedPositions) {
       const range = new vscode.Range(position, position);
-
       const runCodeLens = new vscode.CodeLens(range, {
         title: "run",
         command: "extension.runIsolatedFunction",
-        arguments: [range],
+        arguments: [filename, range.start.line + 1],
       });
       const scheduleCodeLens = new vscode.CodeLens(range, {
         title: "schedule",
@@ -47,15 +53,13 @@ export class IsolatedDecoratorCodeLensProvider
     return codeLenses;
   }
 
-  public resolveCodeLens(
-    codeLens: vscode.CodeLens,
-    token: vscode.CancellationToken
-  ): vscode.CodeLens {
-    codeLens.command = {
-      title: "$(gear)",
-      command: "extension.showIsolatedDecoratorOptions",
-      arguments: [codeLens.range],
-    };
-    return codeLens;
-  }
+  // public resolveCodeLens(
+  //   codeLens: vscode.CodeLens,
+  //   token: vscode.CancellationToken
+  // ): vscode.CodeLens {
+  //   if (codeLens.) {
+
+  //   }
+  //   return codeLens;
+  // }
 }
