@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "fal-serverless-vscode"
+version = "0.1.0"
+description = ""
+authors = ["Daniel Rochetti <daniel@fal.ai>"]
+readme = "README.md"
+packages = [{include = "fal_serverless_vscode"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pydantic = "^1.10.7"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
