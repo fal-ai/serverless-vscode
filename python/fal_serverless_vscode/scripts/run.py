@@ -1,18 +1,15 @@
-import sys
+from __future__ import annotations
 
-from importlib.util import module_from_spec, spec_from_file_location
 from typing import Callable
 
-from fal_serverless_vscode.util import get_module_and_function
+from fal_serverless_vscode.util import get_module_and_function, import_module
+
 
 def import_function(module_path: str, function_name: str) -> Callable:
-    spec = spec_from_file_location("module.name", module_path)
-    module = module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
+    module = import_module(module_path)
 
     function = getattr(module, function_name)
-    if not isinstance(function, Callable):
+    if not isinstance(function, Callable):  # type: ignore[arg-type]
         raise TypeError(f"Function {function_name} not found on {module_path}")
     return function
 
