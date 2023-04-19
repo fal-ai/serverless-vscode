@@ -4,6 +4,8 @@ from ast import AST, Call, FunctionDef, List, Name, Str, parse, walk
 from dataclasses import dataclass
 from typing import Union
 
+from isolate import prepare_environment  # type: ignore[import]
+
 
 @dataclass
 class IsolateNodeParams:
@@ -62,6 +64,12 @@ def get_isolate_nodes(file_path: str) -> list[IsolateFunctionNode]:
                     )
                 )
     return functions
+
+
+def create_env(requirements: list[str]) -> str:
+    base_env = prepare_environment("virtualenv", requirements=requirements)
+    env = base_env.create()
+    return str(env)
 
 
 def __get_isolated_decorator(function: FunctionDef) -> IsolateNode | None:

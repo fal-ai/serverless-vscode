@@ -8,8 +8,7 @@ packages = [{include = "fal_serverless_vscode"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-pydantic = "^1.10.7"
-
+fal-serverless = "^0.6.28"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.2.0"
