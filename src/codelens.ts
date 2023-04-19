@@ -1,6 +1,5 @@
 import * as vscode from "vscode";
 
-import { getIsolateMetadata } from "./integration";
 import { findIsolatedDecorators } from "./isolate";
 
 export class IsolatedDecoratorCodeLensProvider

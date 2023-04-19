@@ -10,7 +10,7 @@ import { findIsolatedDecorators } from "./isolate";
 import { isPythonDocument } from "./utils";
 
 export async function activate(context: vscode.ExtensionContext) {
-  await installExtensionModule();
+  await installExtensionModule(context.globalStorageUri.fsPath);
 
   vscode.commands.registerCommand("extension.runIsolatedFunction", runFunction);
 
@@ -82,7 +82,7 @@ function selectEnvironment(context: vscode.ExtensionContext, filename: string) {
   vscode.window.withProgress(progressOptions, (progress) => {
     progress.report({ message: "started..." });
     return activateIsolatedEnvironment(
-      context.globalStorageUri.fsPath,
+      (context.storageUri ?? context.globalStorageUri).fsPath,
       filename
     )
       .catch((exception) => {

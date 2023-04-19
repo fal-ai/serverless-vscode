@@ -1,14 +1,14 @@
-import * as vscode from "vscode";
-import * as crypto from "crypto";
+import { exec as execWithCallback } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
-import { exec as execWithCallback } from "child_process";
 import { promisify } from "util";
+import * as vscode from "vscode";
 
 import { getInterpreterPath, setVirtualEnvPath } from "./python";
+import { getExtensionVirtualEnv, saveExtensionVirtualEnv } from "./state";
 import { IsolateFunctionMetadata } from "./types";
 
-const SCRIPTS = "./fal_serverless_vscode/scripts";
+const SCRIPTS = "./python/fal_serverless_vscode/scripts";
 
 const exec = promisify(execWithCallback);
 
@@ -45,6 +45,22 @@ async function pip(command: string[]): Promise<ExecResult> {
   return python(["-m", "pip", ...command]);
 }
 
+function getExtensionPythonPath(): string {
+  const envPath = getExtensionVirtualEnv();
+  if (!envPath) {
+    throw new Error("Extension virtualenv not found");
+  }
+  return path.join(envPath, "bin", "python");
+}
+
+async function runScript(
+  script: string,
+  args: string[] = []
+): Promise<ExecResult> {
+  const pythonPath = getExtensionPythonPath();
+  return exec([pythonPath, `${SCRIPTS}/${script}`, ...args].join(" "));
+}
+
 export async function activateIsolatedEnvironment(
   storage: string,
   file: string
@@ -53,52 +69,55 @@ export async function activateIsolatedEnvironment(
   const requirements = metadata.flatMap(
     (func) => func.isolate_node.params.requirements
   );
-  const key = `${file}:${requirements}`;
-  const hash = crypto.createHash("sha256");
-  hash.update(key);
+  const env = await createIsolatedEnvironment([
+    "fal-serverless",
+    ...requirements,
+  ]);
 
-  const name = path.basename(file, ".py");
-  const envName = hash.digest("hex");
-  const envPath = path.resolve(
-    storage,
-    "virtualenvs",
-    envName,
-    `${name}_isolated`
-  );
-  if (fs.existsSync(envPath)) {
-    await setVirtualEnvPath(path.resolve(envPath, "bin", "python"));
-    return;
+  // create a symbolic link to the env path so we get a consistent label
+  // in the python interpreter list in vscode
+  const envName = path.basename(file, ".py") + "_isolated";
+  const folder = path.resolve(storage, "virtualenv");
+  if (!fs.existsSync(folder)) {
+    await exec(["mkdir", "-p", folder].join(" "));
   }
-  await exec(["virtualenv", envPath].join(" "));
-  await setVirtualEnvPath(path.resolve(envPath, "bin", "python"));
-  await installExtensionModule();
-
-  // install all dependencies of a file + fal-serverless
-  // this is a naive approach and do not emulate how isolate works
-  // however, for development purposes it will work for most cases
-  // the environment created will not be the same used to execute the function
-  // so the isolate behavior remains the same
-  const defaultRequirements = ["fal-serverless"];
-  await pip(["install", ...defaultRequirements, ...requirements]);
+  const linkPath = path.join(folder, envName);
+  if (fs.existsSync(linkPath)) {
+    await exec(["rm", linkPath].join(" "));
+  }
+  await exec(["ln", "-s", env, linkPath].join(" "));
+  await setVirtualEnvPath(path.join(linkPath, "bin", "python"));
 }
 
-export async function installExtensionModule(): Promise<void> {
-  try {
-    const info = await pip(["show", "fal_serverless_vscode"]);
-    const isInstalled = info.stdout.includes("Name: fal-serverless-vscode");
-    if (!isInstalled) {
-      await pip(["install", "."]);
-    }
-  } catch (e) {
-    // TODO log error?
-    await pip(["install", "."]);
+export async function createIsolatedEnvironment(
+  requirements: string[] = []
+): Promise<string> {
+  const result = await runScript("env.py", [requirements.join(",")]);
+  const output = handleResult(result);
+  const lines = output.split("\n");
+  return lines[lines.length - 1].trim();
+}
+
+export async function installExtensionModule(
+  storagePath: string
+): Promise<void> {
+  const envPath = path.resolve(storagePath, "venv");
+
+  if (!fs.existsSync(envPath)) {
+    const result = await exec(["virtualenv", envPath].join(" "));
+    handleResult(result);
   }
+  // TODO be smart about when to update the extension module
+  const pythonExec = path.join(envPath, "bin", "python");
+
+  await exec([pythonExec, "-m", "pip", "install", "./python"].join(" "));
+  await saveExtensionVirtualEnv(envPath);
 }
 
 export async function getIsolateMetadata(
   file: string
 ): Promise<IsolateFunctionMetadata[]> {
-  const result = await python([`${SCRIPTS}/metadata.py`, file]);
+  const result = await runScript("metadata.py", [file]);
   const metadata: IsolateFunctionMetadata[] = JSON.parse(handleResult(result));
   return metadata;
 }
@@ -110,7 +129,7 @@ export async function checkSetup(): Promise<boolean> {
 
 export async function isAuthenticated(): Promise<boolean> {
   const result = await exec(command("auth hello"));
-  return false;
+  return handleResult(result).startsWith("Hello, ");
 }
 
 export async function runFunction(
@@ -132,9 +151,10 @@ export async function runFunction(
 
     const runScript = path.resolve(SCRIPTS, "run.py");
     terminal.sendText(`export RUN_SCRIPT=${runScript}`);
-
-    const cmd = ["python", "$RUN_SCRIPT", filename, metadata.name];
+    terminal.sendText(`export PYTHON_EXEC=${getExtensionPythonPath()}`);
     terminal.sendText("clear");
+
+    const cmd = ["$PYTHON_EXEC", "$RUN_SCRIPT", filename, metadata.name];
     terminal.sendText(cmd.join(" "));
   }
 }
