@@ -4,6 +4,7 @@
   "description": "The fal-serverless extension with @isolated and Python cloud execution support",
   "publisher": "fal-ai",
   "version": "0.0.1",
+  "preview": true,
   "engines": {
     "vscode": "^1.77.0"
   },
