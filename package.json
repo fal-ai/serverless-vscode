@@ -1,10 +1,15 @@
 {
-  "name": "serverless-vscode",
+  "name": "fal-serverless-vscode",
   "displayName": "fal-serverless vscode plugin",
   "description": "The fal-serverless extension with @isolated and Python cloud execution support",
   "publisher": "fal-ai",
   "version": "0.0.1",
   "preview": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fal-ai/serverless-vscode.git"
+  },
   "engines": {
     "vscode": "^1.77.0"
   },

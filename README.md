@@ -1,71 +1,29 @@
-# serverless README
+# A fal-serverless extension for Visual Studio Code
 
-This is the README for your extension "serverless". After writing up a brief description, we recommend including the following sections.
+TODO: summary.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+TODO: describe feature, show gifs of it in action
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+This extension depends on the official [Python extension](https://marketplace.visualstudio.com/items?itemName=ms-python.python). It does not modify the Python behavior but it relies on existing functionality to provide a better developer experience to fal-serverless developers.
 
-## Extension Settings
+## Contributing
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
-For example:
+1. Make sure you read our [Code of Conduct](https://github.com/fal-ai/serverless-vscode/blob/main/CODE_OF_CONDUCT.md)
+2. Fork the project and clone your fork
+3. Setup the local environment with `npm install`
+4. Create a feature branch (`git checkout -b feature/add-cool-thing`) or a bugfix branch (`git checkout -b fix/smash-that-bug`)
+5. Commit the changes (`git commit -m 'feat(client): added a cool thing'`) - use [conventional commits](https://conventionalcommits.org)
+6. Push to the branch (`git push --set-upstream origin feature/add-cool-thing`)
+7. Open a Pull Request
 
-This extension contributes the following settings:
+Check the [good first issue queue](https://github.com/fal-ai/serverless-vscode/labels/good+first+issue), your contribution will be welcome!
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+## License
 
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+Distributed under the MIT License. See [LICENSE](https://github.com/fal-ai/serverless-vscode/blob/main/LICENSE) for more information.
