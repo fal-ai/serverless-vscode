@@ -1,14 +1,22 @@
 {
-  "name": "@fal-ai/serverless-vscode",
+  "name": "serverless-vscode",
   "displayName": "fal-serverless vscode plugin",
-  "description": "",
+  "description": "The fal-serverless extension with @isolated and Python cloud execution support",
   "publisher": "fal-ai",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.77.0"
   },
   "categories": [
+    "Programming Languages",
     "Other"
+  ],
+  "keywords": [
+    "python",
+    "fal-serverless",
+    "isolated",
+    "serverless",
+    "fal.ai"
   ],
   "activationEvents": [
     "onLanguage:python"
@@ -25,8 +33,8 @@
     },
     "commands": [
       {
-        "command": "extension.runIsolatedFunction",
-        "title": "Run Custom Command",
+        "command": "falServerless.run",
+        "title": "Run fal-serverless function",
         "arguments": [
           {
             "name": "filename",

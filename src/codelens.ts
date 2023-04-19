@@ -22,30 +22,30 @@ export class IsolatedDecoratorCodeLensProvider
       const range = new vscode.Range(position, position);
       const runCodeLens = new vscode.CodeLens(range, {
         title: "run",
-        command: "extension.runIsolatedFunction",
+        command: "falServerless.run",
         arguments: [filename, range.start.line + 1],
       });
-      const scheduleCodeLens = new vscode.CodeLens(range, {
-        title: "schedule",
-        command: "extension.scheduleIsolatedFunction",
-        arguments: [range],
-      });
-      const serveCodeLens = new vscode.CodeLens(range, {
-        title: "serve",
-        command: "extension.serveIsolatedFunction",
-        arguments: [range],
-      });
-      const optionsCodeLens = new vscode.CodeLens(range, {
-        title: "$(kebab-horizontal)",
-        command: "extension.pickMachineType",
-        arguments: [range],
-      });
+      // const scheduleCodeLens = new vscode.CodeLens(range, {
+      //   title: "schedule",
+      //   command: "extension.scheduleIsolatedFunction",
+      //   arguments: [range],
+      // });
+      // const serveCodeLens = new vscode.CodeLens(range, {
+      //   title: "serve",
+      //   command: "extension.serveIsolatedFunction",
+      //   arguments: [range],
+      // });
+      // const optionsCodeLens = new vscode.CodeLens(range, {
+      //   title: "$(kebab-horizontal)",
+      //   command: "extension.pickMachineType",
+      //   arguments: [range],
+      // });
 
       codeLenses.push(
-        runCodeLens,
-        scheduleCodeLens,
-        serveCodeLens,
-        optionsCodeLens
+        runCodeLens
+        // scheduleCodeLens,
+        // serveCodeLens,
+        // optionsCodeLens
       );
     }
 

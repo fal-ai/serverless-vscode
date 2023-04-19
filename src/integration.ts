@@ -99,18 +99,21 @@ export async function createIsolatedEnvironment(
 }
 
 export async function installExtensionModule(
-  storagePath: string
+  storagePath: string,
+  force: boolean = false
 ): Promise<void> {
   const envPath = path.resolve(storagePath, "venv");
 
-  if (!fs.existsSync(envPath)) {
-    const result = await exec(["virtualenv", envPath].join(" "));
-    handleResult(result);
-  }
-  // TODO be smart about when to update the extension module
   const pythonExec = path.join(envPath, "bin", "python");
+  const install = [pythonExec, "-m", "pip", "install", "./python"].join(" ");
 
-  await exec([pythonExec, "-m", "pip", "install", "./python"].join(" "));
+  if (!fs.existsSync(envPath)) {
+    const result = await exec(`virtualenv ${envPath}`);
+    handleResult(result);
+    await exec(install);
+  } else if (force) {
+    await exec(install);
+  }
   await saveExtensionVirtualEnv(envPath);
 }
 
@@ -147,6 +150,7 @@ export async function runFunction(
     const terminal = vscode.window.createTerminal(`run ${metadata.name}`);
 
     terminal.show(true);
+    // need to wait a bit so the environment is activated
     await delay(500);
 
     const runScript = path.resolve(SCRIPTS, "run.py");

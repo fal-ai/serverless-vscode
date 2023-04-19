@@ -10,9 +10,11 @@ import { findIsolatedDecorators } from "./isolate";
 import { isPythonDocument } from "./utils";
 
 export async function activate(context: vscode.ExtensionContext) {
-  await installExtensionModule(context.globalStorageUri.fsPath);
+  const isDevelopment =
+    context.extensionMode !== vscode.ExtensionMode.Production;
+  await installExtensionModule(context.globalStorageUri.fsPath, isDevelopment);
 
-  vscode.commands.registerCommand("extension.runIsolatedFunction", runFunction);
+  vscode.commands.registerCommand("falServerless.run", runFunction);
 
   const activeEditor = vscode.window.activeTextEditor;
   if (activeEditor && isPythonDocument(activeEditor.document)) {
