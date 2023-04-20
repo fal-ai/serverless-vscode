@@ -1,9 +1,9 @@
 {
   "name": "fal-serverless-vscode",
   "displayName": "fal-serverless vscode plugin",
-  "description": "The fal-serverless extension with @isolated and Python cloud execution support",
+  "description": "The fal-serverless extension with @isolated and Python cloud execution support.",
   "publisher": "fal-ai",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "preview": true,
   "license": "MIT",
   "repository": {
@@ -47,7 +47,7 @@
     "commands": [
       {
         "command": "falServerless.run",
-        "title": "Run fal-serverless function",
+        "title": "fal-serverless: Run function",
         "arguments": [
           {
             "name": "filename",
@@ -58,6 +58,10 @@
             "description": "The line of the isolated decorator"
           }
         ]
+      },
+      {
+        "command": "falServerless.refreshExtensionEnv",
+        "title": "fal-serverless: Refresh extension virtualenv"
       }
     ]
   },

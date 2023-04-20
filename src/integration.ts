@@ -105,7 +105,8 @@ export async function installExtensionModule(
   const envPath = path.resolve(storagePath, "venv");
 
   const pythonExec = path.join(envPath, "bin", "python");
-  const install = [pythonExec, "-m", "pip", "install", "./python"].join(" ");
+  const modulePath = path.join(__dirname, "..", "python");
+  const install = [pythonExec, "-m", "pip", "install", modulePath].join(" ");
 
   if (!fs.existsSync(envPath)) {
     const result = await exec(`virtualenv ${envPath}`);

@@ -15,6 +15,9 @@ export async function activate(context: vscode.ExtensionContext) {
   await installExtensionModule(context.globalStorageUri.fsPath, isDevelopment);
 
   vscode.commands.registerCommand("falServerless.run", runFunction);
+  vscode.commands.registerCommand("falServerless.refreshExtensionEnv", () => {
+    installExtensionModule(context.globalStorageUri.fsPath, true);
+  });
 
   const activeEditor = vscode.window.activeTextEditor;
   if (activeEditor && isPythonDocument(activeEditor.document)) {
