@@ -11,6 +11,7 @@ Read more about fal-serverless [here](https://docs.fal.ai/fal-serverless/quickst
 
 ### Known limitations and issues
 
+- A system Python and virtualenv needs to be available.
 - Python environment is not restored when a file with no isolated functions is opened.
 - Functions with arguments are not supported yet when running from the editor.
 

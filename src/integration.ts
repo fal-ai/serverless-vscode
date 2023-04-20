@@ -4,7 +4,7 @@ import * as path from "path";
 import { promisify } from "util";
 import * as vscode from "vscode";
 
-import { getInterpreterPath, setVirtualEnvPath } from "./python";
+import { setVirtualEnvPath } from "./python";
 import { getExtensionVirtualEnv, saveExtensionVirtualEnv } from "./state";
 import { IsolateFunctionMetadata } from "./types";
 
@@ -25,6 +25,12 @@ function handleResult(result: ExecResult): string {
   return stdout.trim();
 }
 
+function buildCommand(commands: string[]): string {
+  return commands
+    .map((command) => (command.includes(" ") ? `"${command}"` : command))
+    .join(" ");
+}
+
 function command(
   command: string,
   args: any[] = [],
@@ -33,16 +39,7 @@ function command(
   const commandOptions = options
     .keys()
     .map((option: string) => `${option}=${options[option]}`);
-  return ["fal-serverless", command, ...args, ...commandOptions].join(" ");
-}
-
-async function python(command: string[]): Promise<ExecResult> {
-  const interpreter = await getInterpreterPath();
-  return exec([interpreter, ...command].join(" "));
-}
-
-async function pip(command: string[]): Promise<ExecResult> {
-  return python(["-m", "pip", ...command]);
+  return buildCommand(["fal-serverless", command, ...args, ...commandOptions]);
 }
 
 function getExtensionPythonPath(): string {
@@ -58,7 +55,8 @@ async function runScript(
   args: string[] = []
 ): Promise<ExecResult> {
   const pythonPath = getExtensionPythonPath();
-  return exec([pythonPath, `${SCRIPTS}/${script}`, ...args].join(" "));
+  const scriptPath = path.resolve(__dirname, "..", SCRIPTS, script);
+  return exec(buildCommand([pythonPath, scriptPath, ...args]));
 }
 
 export async function activateIsolatedEnvironment(
@@ -79,13 +77,13 @@ export async function activateIsolatedEnvironment(
   const envName = path.basename(file, ".py") + "_isolated";
   const folder = path.resolve(storage, "virtualenv");
   if (!fs.existsSync(folder)) {
-    await exec(["mkdir", "-p", folder].join(" "));
+    await exec(buildCommand(["mkdir", "-p", folder]));
   }
   const linkPath = path.join(folder, envName);
   if (fs.existsSync(linkPath)) {
-    await exec(["rm", linkPath].join(" "));
+    await exec(buildCommand(["rm", linkPath]));
   }
-  await exec(["ln", "-s", env, linkPath].join(" "));
+  await exec(buildCommand(["ln", "-s", env, linkPath]));
   await setVirtualEnvPath(path.join(linkPath, "bin", "python"));
 }
 
@@ -104,12 +102,12 @@ export async function installExtensionModule(
 ): Promise<void> {
   const envPath = path.resolve(storagePath, "venv");
 
-  const pythonExec = path.join(envPath, "bin", "python");
-  const modulePath = path.join(__dirname, "..", "python");
-  const install = [pythonExec, "-m", "pip", "install", modulePath].join(" ");
+  const pipExec = path.join(envPath, "bin", "pip");
+  const modulePath = path.resolve(__dirname, "..", "python");
+  const install = buildCommand([pipExec, "install", modulePath]);
 
   if (!fs.existsSync(envPath)) {
-    const result = await exec(`virtualenv ${envPath}`);
+    const result = await exec(`virtualenv "${envPath}"`);
     handleResult(result);
     await exec(install);
   } else if (force) {
@@ -154,13 +152,13 @@ export async function runFunction(
     // need to wait a bit so the environment is activated
     await delay(500);
 
-    const runScript = path.resolve(SCRIPTS, "run.py");
-    terminal.sendText(`export RUN_SCRIPT=${runScript}`);
-    terminal.sendText(`export PYTHON_EXEC=${getExtensionPythonPath()}`);
+    const runScript = path.resolve(__dirname, "..", SCRIPTS, "run.py");
+    terminal.sendText(`export RUN_SCRIPT="${runScript}"`);
+    terminal.sendText(`export PYTHON_EXEC="${getExtensionPythonPath()}"`);
     terminal.sendText("clear");
 
-    const cmd = ["$PYTHON_EXEC", "$RUN_SCRIPT", filename, metadata.name];
-    terminal.sendText(cmd.join(" "));
+    const cmd = ["$PYTHON_EXEC", "$RUN_SCRIPT", `"${filename}"`, metadata.name];
+    terminal.sendText(buildCommand(cmd));
   }
 }
 
