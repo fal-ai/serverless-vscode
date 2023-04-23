@@ -7,12 +7,20 @@ import {
   runFunction,
 } from "./integration";
 import { findIsolatedDecorators } from "./isolate";
-import { isPythonDocument } from "./utils";
+import { loadState } from "./state";
+import { hasVersionChanged, isPythonDocument } from "./utils";
 
 export async function activate(context: vscode.ExtensionContext) {
-  const isDevelopment =
+  loadState(context);
+  let shouldRefreshEnv =
     context.extensionMode !== vscode.ExtensionMode.Production;
-  await installExtensionModule(context.globalStorageUri.fsPath, isDevelopment);
+  if (!shouldRefreshEnv) {
+    shouldRefreshEnv = await hasVersionChanged(context);
+  }
+  await installExtensionModule(
+    context.globalStorageUri.fsPath,
+    shouldRefreshEnv
+  );
 
   vscode.commands.registerCommand("falServerless.run", runFunction);
   vscode.commands.registerCommand("falServerless.refreshExtensionEnv", () => {
@@ -93,7 +101,7 @@ function selectEnvironment(context: vscode.ExtensionContext, filename: string) {
       .catch((exception) => {
         console.error(exception);
         vscode.window.showErrorMessage(
-          "Error initializing isolated environment"
+          "Error initializing isolated environment: " + exception.message
         );
       })
       .finally(() => {

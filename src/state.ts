@@ -1,15 +1,17 @@
-import { ConfigurationTarget, workspace, WorkspaceConfiguration } from "vscode";
+import { ExtensionContext } from "vscode";
 
-function getWorkspaceConfiguration(): WorkspaceConfiguration {
-  return workspace.getConfiguration("falServerless");
+const NS = "falServerless";
+
+let context: ExtensionContext;
+
+export function loadState(ctx: ExtensionContext) {
+  context = ctx;
 }
 
 export async function saveExtensionVirtualEnv(envPath: string): Promise<void> {
-  const state = getWorkspaceConfiguration();
-  return state.update("extensionEnv", envPath, ConfigurationTarget.Global);
+  return context.globalState.update(`${NS}.extensionEnv`, envPath);
 }
 
 export function getExtensionVirtualEnv(): string | undefined {
-  const state = getWorkspaceConfiguration();
-  return state.get("extensionEnv");
+  return context.globalState.get<string>(`${NS}.extensionEnv`);
 }

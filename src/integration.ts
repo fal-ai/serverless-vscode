@@ -1,10 +1,11 @@
 import { exec as execWithCallback } from "child_process";
+// import {  } from "cross-spawn";
 import * as fs from "fs";
 import * as path from "path";
 import { promisify } from "util";
 import * as vscode from "vscode";
 
-import { setVirtualEnvPath } from "./python";
+import { getInterpreterPath, setVirtualEnvPath } from "./python";
 import { getExtensionVirtualEnv, saveExtensionVirtualEnv } from "./state";
 import { IsolateFunctionMetadata } from "./types";
 
@@ -84,7 +85,7 @@ export async function activateIsolatedEnvironment(
     await exec(buildCommand(["rm", linkPath]));
   }
   await exec(buildCommand(["ln", "-s", env, linkPath]));
-  await setVirtualEnvPath(path.join(linkPath, "bin", "python"));
+  await setVirtualEnvPath(path.join(linkPath, "bin", "python"), file);
 }
 
 export async function createIsolatedEnvironment(
@@ -100,6 +101,7 @@ export async function installExtensionModule(
   storagePath: string,
   force: boolean = false
 ): Promise<void> {
+  const interpreter = await getInterpreterPath();
   const envPath = path.resolve(storagePath, "venv");
 
   const pipExec = path.join(envPath, "bin", "pip");
@@ -107,7 +109,9 @@ export async function installExtensionModule(
   const install = buildCommand([pipExec, "install", modulePath]);
 
   if (!fs.existsSync(envPath)) {
-    const result = await exec(`virtualenv "${envPath}"`);
+    const result = await exec(
+      buildCommand([interpreter, "-m", "venv", envPath])
+    );
     handleResult(result);
     await exec(install);
   } else if (force) {
