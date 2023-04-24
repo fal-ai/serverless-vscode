@@ -1,10 +1,10 @@
 import { exec as execWithCallback } from "child_process";
-// import {  } from "cross-spawn";
 import * as fs from "fs";
 import * as path from "path";
 import { promisify } from "util";
 import * as vscode from "vscode";
 
+import { getLogger } from "./logging";
 import { getInterpreterPath, setVirtualEnvPath } from "./python";
 import { getExtensionVirtualEnv, saveExtensionVirtualEnv } from "./state";
 import { IsolateFunctionMetadata } from "./types";
@@ -101,20 +101,26 @@ export async function installExtensionModule(
   storagePath: string,
   force: boolean = false
 ): Promise<void> {
+  const logger = getLogger("installExtensionModule");
   const interpreter = await getInterpreterPath();
+  logger.info("Using python interpreter: ", interpreter);
   const envPath = path.resolve(storagePath, "venv");
+  logger.debug("Using venv path for the extension module:", envPath);
 
   const pipExec = path.join(envPath, "bin", "pip");
   const modulePath = path.resolve(__dirname, "..", "python");
   const install = buildCommand([pipExec, "install", modulePath]);
+  logger.debug("Using pip install command:", install);
 
   if (!fs.existsSync(envPath)) {
+    logger.info("Creating virtualenv for the extension module");
     const result = await exec(
       buildCommand([interpreter, "-m", "venv", envPath])
     );
     handleResult(result);
     await exec(install);
   } else if (force) {
+    logger.info("Reinstalling extension module");
     await exec(install);
   }
   await saveExtensionVirtualEnv(envPath);

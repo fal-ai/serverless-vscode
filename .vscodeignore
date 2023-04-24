@@ -2,7 +2,7 @@
 .vscode-test/**
 src/**
 out/**
-.gitignore
+**/.gitignore
 .yarnrc
 vsc-extension-quickstart.md
 **/tsconfig.json
@@ -12,3 +12,5 @@ vsc-extension-quickstart.md
 .mypy_cache/**
 python/tests/**
 out/test/**
+*.vsix
+node_modules/**

@@ -4,3 +4,4 @@ node_modules
 .mypy_cache/
 .vscode-test/
 *.vsix
+*.DS_Store

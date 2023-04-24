@@ -32,7 +32,8 @@
     "fal.ai"
   ],
   "activationEvents": [
-    "onLanguage:python"
+    "onLanguage:python",
+    "workspaceContains:**/*.py"
   ],
   "contributes": {
     "commands": [
@@ -92,6 +93,7 @@
   ],
   "dependencies": {
     "cross-spawn": "^7.0.3",
-    "semver": "^7.5.0"
+    "semver": "^7.5.0",
+    "tslog": "^4.8.2"
   }
 }
